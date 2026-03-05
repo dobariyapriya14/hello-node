@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import upload from '../middleware/upload.middleware';
 import {
     getTodos,
     getTodoById,
@@ -58,7 +59,7 @@ router.get('/:id', getTodoById);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
@@ -68,13 +69,18 @@ router.get('/:id', getTodoById);
  *                 type: string
  *               description:
  *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
  *         description: The created todo
  *       400:
  *         description: Validation error
+ *       500:
+ *         description: Server memory issue / error
  */
-router.post('/', createTodo);
+router.post('/', upload.single('image'), createTodo);
 
 /**
  * @swagger
@@ -92,7 +98,7 @@ router.post('/', createTodo);
  *     requestBody:
  *       required: false
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -102,13 +108,16 @@ router.post('/', createTodo);
  *                 type: string
  *               completed:
  *                 type: boolean
+ *               image:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: The updated todo
  *       404:
  *         description: Todo not found
  */
-router.put('/:id', updateTodo);
+router.put('/:id', upload.single('image'), updateTodo);
 
 /**
  * @swagger

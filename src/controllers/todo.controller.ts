@@ -28,12 +28,18 @@ export const createTodo = (req: Request, res: Response): void => {
         return;
     }
 
+    let imageUrl;
+    if (req.file) {
+        imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    }
+
     const newTodo: Todo = {
         id: (nextId++).toString(),
         title,
         description: description || '',
         completed: false,
-        createdAt: new Date()
+        createdAt: new Date(),
+        ...(imageUrl && { image: imageUrl })
     };
 
     todos.push(newTodo);
@@ -51,11 +57,17 @@ export const updateTodo = (req: Request, res: Response): void => {
         return;
     }
 
+    let imageUrl;
+    if (req.file) {
+        imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    }
+
     const updatedTodo = {
         ...todos[todoIndex],
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
-        ...(completed !== undefined && { completed })
+        ...(completed !== undefined && { completed: String(completed) === 'true' }),
+        ...(imageUrl && { image: imageUrl })
     };
 
     todos[todoIndex] = updatedTodo;

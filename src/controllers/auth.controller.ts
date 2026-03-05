@@ -14,6 +14,7 @@ interface AuthRequest extends Request {
 }
 
 const users: User[] = []; // temporary in-memory DB
+const refreshTokens: string[] = []; // temporary in-memory DB for refresh tokens
 
 // Signup controller
 export const signup = async (req: Request, res: Response) => {
@@ -55,12 +56,19 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user.id }, "SECRET_KEY", {
+    const accessToken = jwt.sign({ id: user.id }, "SECRET_KEY", {
+      expiresIn: "15m",
+    });
+
+    const refreshToken = jwt.sign({ id: user.id }, "REFRESH_SECRET_KEY", {
       expiresIn: "7d",
     });
 
+    refreshTokens.push(refreshToken);
+
     res.json({
-      token,
+      accessToken,
+      refreshToken,
       user: { id: user.id, name: user.name, email: user.email },
     });
 
@@ -85,4 +93,45 @@ export const getUserDetails = async (req: AuthRequest, res: Response) => {
   } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
+};
+
+// Refresh Token controller
+export const refreshToken = (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(401).json({ message: "Refresh token is required" });
+  }
+
+  if (!refreshTokens.includes(token)) {
+    return res.status(403).json({ message: "Invalid refresh token" });
+  }
+
+  jwt.verify(token, "REFRESH_SECRET_KEY", (err: any, user: any) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    const newAccessToken = jwt.sign({ id: user.id }, "SECRET_KEY", {
+      expiresIn: "15m",
+    });
+
+    res.json({ accessToken: newAccessToken });
+  });
+};
+
+// Logout controller
+export const logout = (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ message: "Refresh token is required" });
+  }
+
+  const index = refreshTokens.indexOf(token);
+  if (index !== -1) {
+    refreshTokens.splice(index, 1); // remove the token
+  }
+
+  res.json({ message: "Logout successful" });
 };
