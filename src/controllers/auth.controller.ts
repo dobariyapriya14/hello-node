@@ -1,0 +1,88 @@
+import { Request, Response } from 'express';
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  password?: string;
+}
+
+interface AuthRequest extends Request {
+  user?: any;
+}
+
+const users: User[] = []; // temporary in-memory DB
+
+// Signup controller
+export const signup = async (req: Request, res: Response) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const existing = users.find(u => u.email === email);
+    if (existing) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    users.push({
+      id: Date.now(),
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    res.json({ message: "Signup successful" });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Login controller
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = users.find(u => u.email === email);
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign({ id: user.id }, "SECRET_KEY", {
+      expiresIn: "7d",
+    });
+
+    res.json({
+      token,
+      user: { id: user.id, name: user.name, email: user.email },
+    });
+
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get User Details
+export const getUserDetails = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = users.find(u => u.id === req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+};
