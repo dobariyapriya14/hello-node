@@ -5,4 +5,5 @@ export interface Todo {
     completed: boolean;
     createdAt: Date;
     image?: string;
+    pdf?: string;
 }

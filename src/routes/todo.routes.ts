@@ -72,6 +72,9 @@ router.get('/:id', getTodoById);
  *               image:
  *                 type: string
  *                 format: binary
+ *               pdf:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
  *         description: The created todo
@@ -80,7 +83,7 @@ router.get('/:id', getTodoById);
  *       500:
  *         description: Server memory issue / error
  */
-router.post('/', upload.single('image'), createTodo);
+router.post('/', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'pdf', maxCount: 1 }]), createTodo);
 
 /**
  * @swagger
@@ -111,13 +114,16 @@ router.post('/', upload.single('image'), createTodo);
  *               image:
  *                 type: string
  *                 format: binary
+ *               pdf:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: The updated todo
  *       404:
  *         description: Todo not found
  */
-router.put('/:id', upload.single('image'), updateTodo);
+router.put('/:id', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'pdf', maxCount: 1 }]), updateTodo);
 
 /**
  * @swagger

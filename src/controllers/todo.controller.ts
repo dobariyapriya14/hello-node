@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
 import { Todo } from '../models/todo';
-
-let todos: Todo[] = [];
-let nextId = 1;
+import { todos, persist, getNextTodoId } from '../db';
 
 export const getTodos = (req: Request, res: Response): void => {
     res.status(200).json({ success: true, data: todos });
@@ -10,7 +8,7 @@ export const getTodos = (req: Request, res: Response): void => {
 
 export const getTodoById = (req: Request, res: Response): void => {
     const { id } = req.params;
-    const todo = todos.find(t => t.id === id);
+    const todo = todos.find((t: Todo) => t.id === id);
 
     if (!todo) {
         res.status(404).json({ success: false, message: 'Todo not found' });
@@ -28,21 +26,28 @@ export const createTodo = (req: Request, res: Response): void => {
         return;
     }
 
-    let imageUrl;
-    if (req.file) {
-        imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    let imageUrl, pdfUrl;
+
+    if (files && files['image']) {
+        imageUrl = `${req.protocol}://${req.get('host')}/uploads/${files['image'][0].filename}`;
+    }
+    if (files && files['pdf']) {
+        pdfUrl = `${req.protocol}://${req.get('host')}/uploads/${files['pdf'][0].filename}`;
     }
 
     const newTodo: Todo = {
-        id: (nextId++).toString(),
+        id: getNextTodoId(),
         title,
         description: description || '',
         completed: false,
         createdAt: new Date(),
-        ...(imageUrl && { image: imageUrl })
+        ...(imageUrl && { image: imageUrl }),
+        ...(pdfUrl && { pdf: pdfUrl })
     };
 
     todos.push(newTodo);
+    persist();
     res.status(201).json({ success: true, data: newTodo });
 };
 
@@ -50,16 +55,21 @@ export const updateTodo = (req: Request, res: Response): void => {
     const { id } = req.params;
     const { title, description, completed } = req.body;
 
-    const todoIndex = todos.findIndex(t => t.id === id);
+    const todoIndex = todos.findIndex((t: Todo) => t.id === id);
 
     if (todoIndex === -1) {
         res.status(404).json({ success: false, message: 'Todo not found' });
         return;
     }
 
-    let imageUrl;
-    if (req.file) {
-        imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    let imageUrl, pdfUrl;
+
+    if (files && files['image']) {
+        imageUrl = `${req.protocol}://${req.get('host')}/uploads/${files['image'][0].filename}`;
+    }
+    if (files && files['pdf']) {
+        pdfUrl = `${req.protocol}://${req.get('host')}/uploads/${files['pdf'][0].filename}`;
     }
 
     const updatedTodo = {
@@ -67,16 +77,18 @@ export const updateTodo = (req: Request, res: Response): void => {
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
         ...(completed !== undefined && { completed: String(completed) === 'true' }),
-        ...(imageUrl && { image: imageUrl })
+        ...(imageUrl && { image: imageUrl }),
+        ...(pdfUrl && { pdf: pdfUrl })
     };
 
     todos[todoIndex] = updatedTodo;
+    persist();
     res.status(200).json({ success: true, data: updatedTodo });
 };
 
 export const deleteTodo = (req: Request, res: Response): void => {
     const { id } = req.params;
-    const todoIndex = todos.findIndex(t => t.id === id);
+    const todoIndex = todos.findIndex((t: Todo) => t.id === id);
 
     if (todoIndex === -1) {
         res.status(404).json({ success: false, message: 'Todo not found' });
@@ -84,5 +96,6 @@ export const deleteTodo = (req: Request, res: Response): void => {
     }
 
     todos.splice(todoIndex, 1);
+    persist();
     res.status(200).json({ success: true, message: 'Todo deleted successfully' });
 };

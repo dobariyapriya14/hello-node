@@ -9,19 +9,18 @@ interface User {
   password?: string;
 }
 
+import { users, refreshTokens, persist } from '../db';
+
 interface AuthRequest extends Request {
   user?: any;
 }
-
-const users: User[] = []; // temporary in-memory DB
-const refreshTokens: string[] = []; // temporary in-memory DB for refresh tokens
 
 // Signup controller
 export const signup = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
 
-    const existing = users.find(u => u.email === email);
+    const existing = users.find((u: User) => u.email === email);
     if (existing) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -34,6 +33,7 @@ export const signup = async (req: Request, res: Response) => {
       email,
       password: hashedPassword,
     });
+    persist();
 
     res.json({ message: "Signup successful" });
   } catch (err: any) {
@@ -46,7 +46,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    const user = users.find(u => u.email === email);
+    const user = users.find((u: User) => u.email === email);
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
@@ -65,6 +65,7 @@ export const login = async (req: Request, res: Response) => {
     });
 
     refreshTokens.push(refreshToken);
+    persist();
 
     res.json({
       accessToken,
@@ -80,7 +81,7 @@ export const login = async (req: Request, res: Response) => {
 // Get User Details
 export const getUserDetails = async (req: AuthRequest, res: Response) => {
   try {
-    const user = users.find(u => u.id === req.user.id);
+    const user = users.find((u: User) => u.id === req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -131,6 +132,7 @@ export const logout = (req: Request, res: Response) => {
   const index = refreshTokens.indexOf(token);
   if (index !== -1) {
     refreshTokens.splice(index, 1); // remove the token
+    persist();
   }
 
   res.json({ message: "Logout successful" });

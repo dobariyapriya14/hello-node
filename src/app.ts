@@ -26,6 +26,7 @@ app.get("/", (req: Request, res: Response) => {
 // Swagger
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/todos", todoRoutes);
