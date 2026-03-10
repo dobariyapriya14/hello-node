@@ -6,4 +6,5 @@ export interface Todo {
     createdAt: Date;
     image?: string;
     pdf?: string;
+    mode?: boolean;
 }

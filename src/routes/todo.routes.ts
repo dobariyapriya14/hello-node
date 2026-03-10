@@ -23,6 +23,25 @@ const router = Router();
  *   get:
  *     summary: Get all todos
  *     tags: [Todos]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Number of items per page
+ *       - in: query
+ *         name: mode
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Mode flag
  *     responses:
  *       200:
  *         description: List of all todos
@@ -69,6 +88,9 @@ router.get('/:id', getTodoById);
  *                 type: string
  *               description:
  *                 type: string
+ *               mode:
+ *                 type: boolean
+ *                 description: Set true for online mode, false for offline
  *               image:
  *                 type: string
  *                 format: binary
@@ -111,6 +133,9 @@ router.post('/', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'pdf', m
  *                 type: string
  *               completed:
  *                 type: boolean
+ *               mode:
+ *                 type: boolean
+ *                 description: Set true for online mode, false for offline
  *               image:
  *                 type: string
  *                 format: binary
