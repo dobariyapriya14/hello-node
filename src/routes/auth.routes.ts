@@ -1,7 +1,7 @@
 import express from "express";
 
 import authMiddleware from "../middleware/auth.middleware";
-import { signup, login, getUserDetails, refreshToken, logout } from "../controllers/auth.controller";
+import { signup, login, getUserDetails, refreshToken, logout, sendOtp, verifyOtp } from "../controllers/auth.controller";
 const router = express.Router();
 
 /**
@@ -129,5 +129,61 @@ router.post("/refresh", refreshToken);
  *         description: Logout successful
  */
 router.post("/logout", logout);
+
+/**
+ * @swagger
+ * /api/auth/send-otp:
+ *   post:
+ *     summary: Send OTP
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: test@gmail.com
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       400:
+ *         description: Email is required
+ */
+router.post("/send-otp", sendOtp);
+
+/**
+ * @swagger
+ * /api/auth/verify-otp:
+ *   post:
+ *     summary: Verify OTP
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: test@gmail.com
+ *               otp:
+ *                 type: string
+ *                 example: 1234
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully
+ *       400:
+ *         description: Invalid OTP or expired
+ */
+router.post("/verify-otp", verifyOtp);
 
 export default router;
