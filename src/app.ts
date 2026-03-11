@@ -5,6 +5,7 @@ import swaggerDocument from './config/swagger';
 import authRoutes from './routes/auth.routes';
 import todoRoutes from './routes/todo.routes';
 import notificationRoutes from './routes/notification.routes';
+import "./cron/notification.cron";
 
 import logger from './middleware/logger';
 import path from 'path';
