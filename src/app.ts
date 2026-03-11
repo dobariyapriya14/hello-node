@@ -4,6 +4,8 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './config/swagger';
 import authRoutes from './routes/auth.routes';
 import todoRoutes from './routes/todo.routes';
+import notificationRoutes from './routes/notification.routes';
+
 import logger from './middleware/logger';
 import path from 'path';
 
@@ -27,10 +29,10 @@ app.get("/", (req: Request, res: Response) => {
 // Swagger
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/todos", todoRoutes);
+app.use("/api/notification", notificationRoutes);
 
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
