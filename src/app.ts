@@ -5,14 +5,13 @@ import swaggerDocument from './config/swagger';
 import authRoutes from './routes/auth.routes';
 import todoRoutes from './routes/todo.routes';
 import notificationRoutes from './routes/notification.routes';
-import stripeRoutes from './routes/stripe.routes';
-import { handleWebhook } from './controllers/stripe.controller';
 import "./cron/notification.cron";
 
 import logger from './middleware/logger';
 import path from 'path';
 
 import dotenv from "dotenv";
+import Stripe from 'stripe';
 
 dotenv.config();
 
@@ -20,11 +19,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-
-// Special handling for Stripe Webhook to get raw body
-// This MUST be defined before express.json()
-app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), handleWebhook);
-
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(logger);
@@ -41,7 +35,28 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/api/auth", authRoutes);
 app.use("/api/todos", todoRoutes);
 app.use("/api/notification", notificationRoutes);
-app.use("/api/stripe", stripeRoutes);
+
+const stripe = new Stripe("sk_test_51TBYJ9QNh8SDUnEiDtPLpZsnb7FkMmDDyYoRerQV0gxJsZNOxFVG1gMz5YxyhcUVW8HdWO3mhuYLEiNONC4xS5XG00aJh1A2Zr");
+
+app.post("/create-payment-intent", async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount * 100, // cents
+      currency: "usd",
+      payment_method_types: ["card"],
+    });
+
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    res.status(500).send({ error: errorMessage });
+  }
+});
 
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
