@@ -18,7 +18,12 @@ import languageMiddleware from "./middleware/language.middleware";
 import userRoutes from "./routes/user.routes";
 import { globalLimiter } from './middleware/rate.limiter';
 
+import { connectDB } from './config/db';
+
 dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
