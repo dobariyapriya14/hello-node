@@ -76,7 +76,6 @@ app.post("/create-payment-intent", async (req, res) => {
     res.status(500).send({ error: errorMessage });
   }
 });
-
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
 });
