@@ -4,6 +4,8 @@ import authMiddleware from "../middleware/auth.middleware";
 import { signup, login, getUserDetails, refreshToken, logout, sendOtp, verifyOtp } from "../controllers/auth.controller";
 const router = express.Router();
 
+import { loginLimiter, otpLimiter } from '../middleware/rate.limiter';
+
 /**
  * @swagger
  * /api/auth/signup:
@@ -62,7 +64,7 @@ router.post("/signup", signup);
  *       200:
  *         description: Login success
  */
-router.post("/login", login);
+router.post("/login", loginLimiter, login);
 
 /**
  * @swagger
@@ -154,7 +156,7 @@ router.post("/logout", logout);
  *       400:
  *         description: Email is required
  */
-router.post("/send-otp", sendOtp);
+router.post("/send-otp", otpLimiter, sendOtp);
 
 /**
  * @swagger
@@ -184,6 +186,6 @@ router.post("/send-otp", sendOtp);
  *       400:
  *         description: Invalid OTP or expired
  */
-router.post("/verify-otp", verifyOtp);
+router.post("/verify-otp", otpLimiter, verifyOtp);
 
 export default router;
