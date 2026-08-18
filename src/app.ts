@@ -13,6 +13,11 @@ import path from 'path';
 import dotenv from "dotenv";
 import Stripe from 'stripe';
 
+import i18n from "./config/i18n";
+import languageMiddleware from "./middleware/language.middleware";
+import userRoutes from "./routes/user.routes";
+import { globalLimiter } from './middleware/rate.limiter';
+
 dotenv.config();
 
 const app = express();
@@ -23,6 +28,20 @@ app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(logger);
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+// 🌍 Apply to all routes
+app.use(globalLimiter);
+
+
+// Initialize i18n
+app.use(i18n.init);
+
+// Apply language middleware
+app.use(languageMiddleware);
+
+// Routes
+app.use("/api", userRoutes);
+
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Server is running");

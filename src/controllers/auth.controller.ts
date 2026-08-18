@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { users, refreshTokens, otps, persist } from '../db';
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
@@ -9,8 +11,6 @@ interface User {
   email: string;
   password?: string;
 }
-
-import { users, refreshTokens, otps, persist } from '../db';
 
 interface AuthRequest extends Request {
   user?: any;
