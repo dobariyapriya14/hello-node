@@ -184,7 +184,7 @@ export const sendOtp = async (req: Request, res: Response) => {
   }
 };
 
-// Verify OTP controller
+// Verify OTP controller (Login with OTP)
 export const verifyOtp = async (req: Request, res: Response) => {
   try {
     const { email, otp } = req.body;
@@ -208,7 +208,28 @@ export const verifyOtp = async (req: Request, res: Response) => {
     // Clear OTP after successful verification
     await Otp.deleteOne({ email });
 
-    res.json({ message: "OTP verified successfully!!" });
+    // Check if user exists to perform Login with OTP
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found with this email" });
+    }
+
+    const accessToken = jwt.sign({ id: user._id }, "SECRET_KEY", {
+      expiresIn: "15m",
+    });
+
+    const refreshToken = jwt.sign({ id: user._id }, "REFRESH_SECRET_KEY", {
+      expiresIn: "7d",
+    });
+
+    await RefreshToken.create({ token: refreshToken });
+
+    res.json({
+      message: "Login successful with OTP",
+      accessToken,
+      refreshToken,
+      user: { id: user._id, name: user.name, email: user.email },
+    });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
   }

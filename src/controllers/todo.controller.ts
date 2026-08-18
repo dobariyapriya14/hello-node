@@ -32,7 +32,7 @@ export const getTodos = async (req: Request, res: Response): Promise<void> => {
 
 export const getTodoById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; 
         const todo = await Todo.findById(id);
 
         if (!todo) {
