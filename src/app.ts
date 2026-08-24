@@ -4,6 +4,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './config/swagger';
 import authRoutes from './routes/auth.routes';
 import todoRoutes from './routes/todo.routes';
+import categoryRoutes from './routes/category.routes';
 import notificationRoutes from './routes/notification.routes';
 import "./cron/notification.cron";
 
@@ -58,6 +59,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/todos", todoRoutes);
+app.use("/api/categories", categoryRoutes);
 app.use("/api/notification", notificationRoutes);
 
 const stripe = new Stripe("sk_test_51TBYJ9QNh8SDUnEiDtPLpZsnb7FkMmDDyYoRerQV0gxJsZNOxFVG1gMz5YxyhcUVW8HdWO3mhuYLEiNONC4xS5XG00aJh1A2Zr");
