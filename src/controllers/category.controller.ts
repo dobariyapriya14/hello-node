@@ -5,6 +5,7 @@ export interface AuthRequest extends Request {
   user?: any;
 }
 
+//Get categories
 export const getCategories = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const filter: any = {};
